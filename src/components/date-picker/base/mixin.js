@@ -41,6 +41,7 @@ export default {
     },
     methods: {
         handleClick (cell) {
+            if (cell.disabled || cell.type === 'month') return;
             const newDate = new Date(clearHours(cell.date));
 
             this.$emit('on-pick', newDate);

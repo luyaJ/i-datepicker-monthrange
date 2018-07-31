@@ -54,13 +54,7 @@ const dateSorter = (a, b) => {
 export default {
   name: "RangeDatePickerPanel",
   mixins: [Mixin, Locale, DateMixin],
-  components: {
-    Icon,
-    YearTable,
-    MonthTable,
-    Confirm,
-    datePanelLabel
-  },
+  components: { Icon, YearTable, MonthTable, Confirm, datePanelLabel },
   props: {
     // more props in the mixin
     splitPanels: {
@@ -69,8 +63,8 @@ export default {
     }
   },
   data() {
-    const [minDate, maxDate] = this.value.map(date => date || initTimeDate());
-    const leftPanelDate = this.startDate ? this.startDate : minDate;
+    const [minMonth, maxMonth] = this.value.map(date => date || initTimeDate());
+    const leftPanelDate = this.startDate ? this.startDate : minMonth;
     return {
       prefixCls: prefixCls,
       datePrefixCls: datePrefixCls,
@@ -78,7 +72,7 @@ export default {
       rangeState: {
         from: this.value[0],
         to: this.value[1],
-        selecting: minDate && !maxDate
+        selecting: minMonth && !maxMonth
       },
       currentView: this.selectionMode || "range",
       leftPickerTable: `${this.selectionMode}-table`,
@@ -125,9 +119,9 @@ export default {
   },
   watch: {
     value(newVal) {
-      const minDate = newVal[0] ? toDate(newVal[0]) : null;
-      const maxDate = newVal[1] ? toDate(newVal[1]) : null;
-      this.dates = [minDate, maxDate].sort(dateSorter);
+      const minMonth = newVal[0] ? toDate(newVal[0]) : null;
+      const maxMonth = newVal[1] ? toDate(newVal[1]) : null;
+      this.dates = [minMonth, maxMonth].sort(dateSorter);
       this.rangeState = {
         from: this.dates[0],
         to: this.dates[1],
@@ -213,11 +207,11 @@ export default {
     },
     handleRangePick(val, type) {
       if (this.rangeState.selecting) {
-        const [minDate, maxDate] = [this.rangeState.from, val].sort(dateSorter);
-        this.dates = [minDate, maxDate];
+        const [minMonth, maxMonth] = [this.rangeState.from, val].sort(dateSorter);
+        this.dates = [minMonth, maxMonth];
         this.rangeState = {
-          from: minDate,
-          to: maxDate,
+          from: minMonth,
+          to: maxMonth,
           selecting: false
         }
         this.handleConfirm(false, type || "date");

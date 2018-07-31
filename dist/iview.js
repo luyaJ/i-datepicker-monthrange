@@ -2769,13 +2769,7 @@ var dateSorter = function (a, b) {
 exports.default = {
   name: "RangeDatePickerPanel",
   mixins: [_panelMixin2.default, _locale2.default, _datePanelMixin2.default],
-  components: {
-    Icon: _icon2.default,
-    YearTable: _yearTable2.default,
-    MonthTable: _monthTable2.default,
-    Confirm: _confirm2.default,
-    datePanelLabel: _datePanelLabel2.default
-  },
+  components: { Icon: _icon2.default, YearTable: _yearTable2.default, MonthTable: _monthTable2.default, Confirm: _confirm2.default, datePanelLabel: _datePanelLabel2.default },
   props: {
     splitPanels: {
       type: Boolean,
@@ -2790,10 +2784,10 @@ exports.default = {
       return date || (0, _util.initTimeDate)();
     }.bind(this)),
         _value$map2 = (0, _slicedToArray3.default)(_value$map, 2),
-        minDate = _value$map2[0],
-        maxDate = _value$map2[1];
+        minMonth = _value$map2[0],
+        maxMonth = _value$map2[1];
 
-    var leftPanelDate = this.startDate ? this.startDate : minDate;
+    var leftPanelDate = this.startDate ? this.startDate : minMonth;
     return {
       prefixCls: prefixCls,
       datePrefixCls: datePrefixCls,
@@ -2801,7 +2795,7 @@ exports.default = {
       rangeState: {
         from: this.value[0],
         to: this.value[1],
-        selecting: minDate && !maxDate
+        selecting: minMonth && !maxMonth
       },
       currentView: this.selectionMode || "range",
       leftPickerTable: String(this.selectionMode) + "-table",
@@ -2839,9 +2833,9 @@ exports.default = {
   },
   watch: {
     value: function value(newVal) {
-      var minDate = newVal[0] ? (0, _util.toDate)(newVal[0]) : null;
-      var maxDate = newVal[1] ? (0, _util.toDate)(newVal[1]) : null;
-      this.dates = [minDate, maxDate].sort(dateSorter);
+      var minMonth = newVal[0] ? (0, _util.toDate)(newVal[0]) : null;
+      var maxMonth = newVal[1] ? (0, _util.toDate)(newVal[1]) : null;
+      this.dates = [minMonth, maxMonth].sort(dateSorter);
       this.rangeState = {
         from: this.dates[0],
         to: this.dates[1],
@@ -2939,13 +2933,13 @@ exports.default = {
       if (this.rangeState.selecting) {
         var _sort = [this.rangeState.from, val].sort(dateSorter),
             _sort2 = (0, _slicedToArray3.default)(_sort, 2),
-            minDate = _sort2[0],
-            maxDate = _sort2[1];
+            minMonth = _sort2[0],
+            maxMonth = _sort2[1];
 
-        this.dates = [minDate, maxDate];
+        this.dates = [minMonth, maxMonth];
         this.rangeState = {
-          from: minDate,
-          to: maxDate,
+          from: minMonth,
+          to: maxMonth,
           selecting: false
         };
         this.handleConfirm(false, type || "date");
@@ -3208,6 +3202,7 @@ exports.default = {
     },
     methods: {
         handleClick: function handleClick(cell) {
+            if (cell.disabled || cell.type === 'month') return;
             var newDate = new Date((0, _util.clearHours)(cell.date));
 
             this.$emit('on-pick', newDate);
@@ -3302,8 +3297,7 @@ exports.default = {
             var cells = [];
             var cell_tmpl = {
                 text: '',
-                selected: false,
-                disabled: false
+                selected: false
             };
 
             var tableYear = this.tableDate.getFullYear();
@@ -3311,6 +3305,12 @@ exports.default = {
                 (0, _newArrowCheck3.default)(this, _this2);
                 return (0, _util.clearHours)(new Date(date.getFullYear(), date.getMonth(), 1));
             }.bind(this));
+
+            var _dates$map = this.dates.map(_util.clearHours),
+                _dates$map2 = (0, _slicedToArray3.default)(_dates$map, 2),
+                minMonth = _dates$map2[0],
+                maxMonth = _dates$map2[1];
+
             var focusedDate = (0, _util.clearHours)(new Date(this.focusedDate.getFullYear(), this.focusedDate.getMonth(), 1));
 
             var rangeStart = this.rangeState.from && (0, _util.clearHours)(this.rangeState.from);
@@ -3322,7 +3322,11 @@ exports.default = {
                 cell.text = this.tCell(i + 1);
                 var day = (0, _util.clearHours)(cell.date);
                 var month = (0, _util.clearHours)(cell.text);
-                cell.disabled = typeof this.disabledDate === 'function' && this.disabledDate(cell.date) && this.selectionMode === 'month';
+
+                cell.start = day === minMonth;
+                cell.end = day === maxMonth;
+
+                cell.disabled = typeof this.disabledDate === 'function' && this.disabledDate(cell.date.getFullYear(), cell.date.getMonth() + 1);
                 cell.selected = selectedDays.includes(day);
                 cell.focused = month === focusedDate;
                 cell.range = (0, _util.isInRange)(cell.date, rangeStart, rangeEnd);
@@ -3336,7 +3340,7 @@ exports.default = {
         getCellCls: function getCellCls(cell) {
             var _ref;
 
-            return [String(_prefixCls2.default) + '-cell', (_ref = {}, (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-selected', cell.selected), (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-disabled', cell.disabled), (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-focused', cell.focused), (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-range', cell.range && !cell.start && !cell.end), _ref)];
+            return [String(_prefixCls2.default) + '-cell', (_ref = {}, (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-selected', cell.selected && !cell.disabled), (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-disabled', cell.disabled), (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-focused', (0, _util.clearHours)(cell.date) === (0, _util.clearHours)(this.focusedDate) && !cell.disabled), (0, _defineProperty3.default)(_ref, String(_prefixCls2.default) + '-cell-range', cell.range && !cell.start && !cell.end && !cell.disabled), _ref)];
         },
         tCell: function tCell(nr) {
             return this.t('i.datepicker.months.m' + String(nr));
@@ -4613,7 +4617,7 @@ if (typeof window !== 'undefined' && window.Vue) {
 }
 
 var API = (0, _extends3.default)({
-    version: '1.0.8',
+    version: '1.0.9',
     locale: _index2.default.use,
     i18n: _index2.default.i18n,
     install: install
@@ -8506,8 +8510,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_date_range_vue__ = __webpack_require__(66);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_date_range_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_date_range_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_date_range_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_date_range_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_62ee75d0_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__ = __webpack_require__(160);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_62ee75d0_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_62ee75d0_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_09433aec_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__ = __webpack_require__(160);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_09433aec_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_09433aec_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__ = __webpack_require__(2);
 /* script */
 
@@ -8525,8 +8529,8 @@ var __vue_module_identifier__ = null
 
 var Component = Object(__WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__["a" /* default */])(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_date_range_vue___default.a,
-  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_62ee75d0_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__["render"],
-  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_62ee75d0_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__["staticRenderFns"],
+  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_09433aec_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__["render"],
+  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_09433aec_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_date_range_vue__["staticRenderFns"],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
@@ -8624,8 +8628,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_month_table_vue__ = __webpack_require__(72);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_month_table_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_month_table_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_month_table_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_month_table_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_3e1d074e_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__ = __webpack_require__(151);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_3e1d074e_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_3e1d074e_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_332d9ded_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__ = __webpack_require__(151);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_332d9ded_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_332d9ded_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__ = __webpack_require__(2);
 /* script */
 
@@ -8643,8 +8647,8 @@ var __vue_module_identifier__ = null
 
 var Component = Object(__WEBPACK_IMPORTED_MODULE_2__node_modules_vue_loader_lib_runtime_component_normalizer__["a" /* default */])(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_month_table_vue___default.a,
-  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_3e1d074e_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__["render"],
-  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_3e1d074e_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__["staticRenderFns"],
+  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_332d9ded_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__["render"],
+  __WEBPACK_IMPORTED_MODULE_1__babel_loader_sourceMap_node_modules_vue_loader_lib_template_compiler_index_id_data_v_332d9ded_hasScoped_false_optionsId_0_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_month_table_vue__["staticRenderFns"],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,

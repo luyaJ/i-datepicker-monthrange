@@ -36,12 +36,14 @@
                 let cells = [];
                 const cell_tmpl = {
                     text: '',
-                    selected: false,
-                    disabled: false
+                    selected: false
+                    // disabled: false
                 };
 
-                const tableYear = this.tableDate.getFullYear();
+                // tableDate 完整年月日时间
+                const tableYear = this.tableDate.getFullYear();  // 当前面板年2018
                 const selectedDays = this.dates.filter(Boolean).map(date => clearHours(new Date(date.getFullYear(), date.getMonth(), 1)));
+                const [minMonth, maxMonth] = this.dates.map(clearHours);  
                 const focusedDate = clearHours(new Date(this.focusedDate.getFullYear(), this.focusedDate.getMonth(), 1));
                 // mixin 
                 const rangeStart = this.rangeState.from && clearHours(this.rangeState.from);
@@ -49,15 +51,19 @@
 
                 for (let i = 0; i < 12; i++) {
                     const cell = deepCopy(cell_tmpl);
-                    cell.date = new Date(tableYear, i, 1);
+                    cell.date = new Date(tableYear, i, 1);  // Mon Jan 01 2018 00:00:00 GMT+0800 (中国标准时间)
                     cell.text = this.tCell(i + 1);  // 左右两边的1月-12月
-                    const day = clearHours(cell.date);
+                    const day = clearHours(cell.date);  // 1514736000000
                     const month = clearHours(cell.text);
-                    cell.disabled = typeof this.disabledDate === 'function' && this.disabledDate(cell.date) && this.selectionMode === 'month';
-                    cell.selected = selectedDays.includes(day);  // 选中 深蓝
-                    // cell.focused = day === focusedDate;
+
+                    // 头尾选中月份 没有range，只有selected
+                    cell.start = day === minMonth;
+                    cell.end = day === maxMonth;
+
+                    cell.disabled = typeof this.disabledDate === 'function' && this.disabledDate(cell.date.getFullYear(), cell.date.getMonth() + 1);
+                    cell.selected = selectedDays.includes(day);
                     cell.focused = month === focusedDate;
-                    cell.range = isInRange(cell.date, rangeStart, rangeEnd)
+                    cell.range = isInRange(cell.date, rangeStart, rangeEnd);
                     cells.push(cell);
                 }
                     
@@ -69,10 +75,10 @@
                 return [
                     `${prefixCls}-cell`,
                     {
-                        [`${prefixCls}-cell-selected`]: cell.selected,
+                        [`${prefixCls}-cell-selected`]: cell.selected && !cell.disabled, 
                         [`${prefixCls}-cell-disabled`]: cell.disabled,
-                        [`${prefixCls}-cell-focused`]: cell.focused,
-                        [`${prefixCls}-cell-range`]: cell.range && !cell.start && !cell.end
+                        [`${prefixCls}-cell-focused`]: clearHours(cell.date) === clearHours(this.focusedDate) && !cell.disabled,
+                        [`${prefixCls}-cell-range`]: cell.range && !cell.start && !cell.end && !cell.disabled
                     }
                 ];
             },
